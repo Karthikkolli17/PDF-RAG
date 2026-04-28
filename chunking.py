@@ -13,70 +13,72 @@ def cosine(a, b):
 def split(text):
     return nltk.sent_tokenize(text)
 
-text = """Students must submit assignments before the deadline.
-    Late submissions will receive a 10% penalty per day.
-    The cafeteria is open from 8am to 8pm on weekdays.
-    Lunch includes vegetarian and vegan meal options.
-"""
+# text = """Students must submit assignments before the deadline.
+#     Late submissions will receive a 10% penalty per day.
+#     The cafeteria is open from 8am to 8pm on weekdays.
+#     Lunch includes vegetarian and vegan meal options.
+# """
 
-sentences = split(text)
+# sentences = split(text)
 
-def simi(senteces):
+# def simi(senteces):
 
-    embeddings = model.encode(senteces)
-    similarities = []
+#     embeddings = model.encode(senteces)
+#     similarities = []
 
-    for i in range(len(senteces) - 1):
+#     for i in range(len(senteces) - 1):
 
-        sim = cosine(embeddings[i], embeddings[i+1])
-        similarities.append(sim)
+#         sim = cosine(embeddings[i], embeddings[i+1])
+#         similarities.append(sim)
     
-    return similarities, embeddings
+#     return similarities, embeddings
 
-similarities, embeddings = simi(sentences)
+# similarities, embeddings = simi(sentences)
 
-for i, sim in enumerate(similarities):
-    print(f"{i+1} -> {i+2}: {sim:.4f}")
+# for i, sim in enumerate(similarities):
+#     print(f"{i+1} -> {i+2}: {sim:.4f}")
 
 
-# boundary detection
-def boundary(similarities, percentile = 25):
+# # boundary detection
+# def boundary(similarities, percentile = 25):
 
-    threshold = np.percentile(similarities, percentile)
-    boundaries = []
-    for i, sim in enumerate(similarities):
+#     threshold = np.percentile(similarities, percentile)
+#     boundaries = []
+#     for i, sim in enumerate(similarities):
 
-        if sim < threshold:
-            boundaries.append(i)
-    return boundaries, threshold
+#         if sim < threshold:
+#             boundaries.append(i)
+#     return boundaries, threshold
 
-boundaries, threshold = boundary(similarities)
+# boundaries, threshold = boundary(similarities)
 
-print(f"Threshold: {threshold:.4f}")
-print(f"Boundaries after sentence index: {boundaries}")
+# print(f"Threshold: {threshold:.4f}")
+# print(f"Boundaries after sentence index: {boundaries}")
 
-def chunks(sentences, boundaries):
+# def chunks(sentences, boundaries):
 
-    chunks = []
-    start = 0
-    for boundary in boundaries:
+#     chunks = []
+#     start = 0
+#     for boundary in boundaries:
 
-        chunk = " ".join(sentences[start: boundary + 1])
-        chunks.append(chunk)
-        start = boundary + 1
+#         chunk = " ".join(sentences[start: boundary + 1])
+#         chunks.append(chunk)
+#         start = boundary + 1
 
-    chunks.append(" ".join(sentences[start:]))
-    return chunks
+#     chunks.append(" ".join(sentences[start:]))
+#     return chunks
 
-chunks = chunks(sentences, boundaries)
-for i, chunk in enumerate(chunks):
+# chunks = chunks(sentences, boundaries)
+# for i, chunk in enumerate(chunks):
 
-    print(f"\nChunk {i+1}:\n{chunk}")
-
+#     print(f"\nChunk {i+1}:\n{chunk}")
 
 def semantic_chunk(text):
 
     sentences = nltk.sent_tokenize(text)
+
+    if len(sentences) < 2:
+        return [text.strip()]
 
     embeddings = model.encode(sentences)
 
@@ -107,18 +109,18 @@ def semantic_chunk(text):
 
     return chunks
 
-new_text = """      
-  Students are expected to attend all lectures and labs.                                                                                                                                                                     
-  Attendance will be taken at the beginning of each session.                                                                                                                                                                 
-  More than three unexcused absences may result in a grade penalty.
+# new_text = """      
+#   Students are expected to attend all lectures and labs.                                                                                                                                                                     
+#   Attendance will be taken at the beginning of each session.                                                                                                                                                                 
+#   More than three unexcused absences may result in a grade penalty.
                                                                                                                                                                                                                              
-  The course covers machine learning fundamentals including supervised and unsupervised learning. 
-  Week 3 focuses on linear regression and gradient descent.                                                                                                                                                                  
-  Neural networks and deep learning are introduced in week 7.                                                                                                                                                                
+#   The course covers machine learning fundamentals including supervised and unsupervised learning. 
+#   Week 3 focuses on linear regression and gradient descent.                                                                                                                                                                  
+#   Neural networks and deep learning are introduced in week 7.                                                                                                                                                                
                                                                                                                                                                                                                              
-  All assignments must be submitted through the course portal.                                                                                                                                                               
-  Late submissions will be penalized 10% per day.                                                                                                                                                                            
-  Extensions will only be granted with prior approval from the instructor.
-  """                                                                                                                                                                                                                        
+#   All assignments must be submitted through the course portal.                                                                                                                                                               
+#   Late submissions will be penalized 10% per day.                                                                                                                                                                            
+#   Extensions will only be granted with prior approval from the instructor.
+#   """                                                                                                                                                                                                                        
 
-print(semantic_chunk(new_text))
+# print(semantic_chunk(new_text))

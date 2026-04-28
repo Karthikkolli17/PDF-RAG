@@ -1,4 +1,5 @@
 import fitz
+import re
 
 def load(path):
 
@@ -7,6 +8,7 @@ def load(path):
     for num, page in enumerate(doc):
 
         text = page.get_text().strip()
+        text = clean(text)
         if text:
             pages.append({
                 "page": num+1,
@@ -14,6 +16,17 @@ def load(path):
             })
     return pages
 
-pages = load("2025-2026 Student Handbook Final Copy_0.pdf")
-print(f"Total Pages: ", {len(pages)})
-print(f"\nPage 5 sample: \n{pages[4]["text"][:300]}")
+def clean(text):
+
+    # remove "Student Handbook #"
+    text = re.sub(r"Student Handbook\s+\d+", "", text)
+    
+    # remove extra whitespace and blank lines
+    text = re.sub(r"\n{3,}", "\n\n", text)
+
+    # skip pages that are too short
+    if len(text) < 100:
+        return None
+    
+    return text
+
