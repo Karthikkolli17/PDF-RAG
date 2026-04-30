@@ -81,6 +81,8 @@ def extract_descp_metadata(text):
     credits_match = re.search(r'Credits:\s*(\d+)', text)
     if credits_match:
         metadata['credits'] = int(credits_match.group(1))
+    elif re.search(r'[Vv]ariable\s*credit|[Cc]redit.*[Vv]ariable|\d+[-–]\d+\s*hours?', text):
+        metadata['credits'] = 'Variable'
 
     return metadata
 
