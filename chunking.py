@@ -1,6 +1,7 @@
 from sentence_transformers import SentenceTransformer
 import numpy as np
 import nltk
+import re
 
 nltk.download("punkt_tab", quiet = True)
 
@@ -8,7 +9,7 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 
 # cosine similarity
 def cosine(a, b):
-    return np.dot(a, b)/ (np.linalg.norm(a)) * (np.linalg.norm(b))
+    return np.dot(a, b)/ (np.linalg.norm(a) * np.linalg.norm(b))
 
 def split(text):
     return nltk.sent_tokenize(text)
@@ -107,7 +108,45 @@ def semantic_chunk(text):
 
     chunks.append(" ".join(sentences[start:]))
 
-    return chunks
+    return merge(chunks)
+
+def merge(chunks, size = 200):
+
+    merged = []
+    buffer = ""
+
+    for chunk in chunks:
+        if len(buffer) + len(chunk) < size:
+            buffer = buffer + " " + chunk
+        else:
+            if buffer:
+                merged.append(buffer.strip())
+            buffer = chunk
+
+    if buffer:
+        merged.append(buffer.strip())
+
+    return merged
+
+def descriptions(text):
+
+    matches = list(re.finditer(r'^[A-Z]{2,5}\s\d{3}', text, re.MULTILINE))
+
+    if not matches:
+        return [text.strip()]
+
+    chunks = []
+
+    for i, match in enumerate(matches):
+        start = match.start()
+
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
+
+        chunk = text[start:end].strip()
+        if chunk:
+            chunks.append(chunk)
+
+    return chunks 
 
 # new_text = """      
 #   Students are expected to attend all lectures and labs.                                                                                                                                                                     

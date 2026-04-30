@@ -6,7 +6,7 @@ ef = embedding_functions.SentenceTransformerEmbeddingFunction(
 )
 client = chromadb.PersistentClient(path="./chroma_db")
 
-collection = client.get_or_create_collection(name="docuemts_v2", embedding_function=ef)
+collection = client.get_or_create_collection(name="grad_catalog_v5", embedding_function=ef)
 
 def store(chunks):
 
@@ -17,7 +17,8 @@ def store(chunks):
     for i, chunk in enumerate(chunks):
 
         documents.append(chunk["content"])
-        metadata.append({"page": chunk["page"]})
+        meta = {k: v for k, v in chunk.items() if k != "content"}
+        metadata.append(meta)
         ids.append(f"chunk_{i}")
 
     collection.add(

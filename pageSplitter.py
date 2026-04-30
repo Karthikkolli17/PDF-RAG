@@ -18,12 +18,17 @@ def load(path):
 
 def clean(text):
 
-    # remove "Student Handbook #"
-    text = re.sub(r"Student Handbook\s+\d+", "", text)
+    # remove page header
+    text = re.sub(r"^\d+\s*\n\s*.+\n", "", text)
     
+    # replace non-breaking spaces
+    text = text.replace('\xa0', ' ')
+
     # remove extra whitespace and blank lines
     text = re.sub(r"\n{3,}", "\n\n", text)
 
+    text = re.sub(r"Illinois Institute of Technology GR_2024-2025\s*\n\s*\d+\s*\n", "", text)
+    
     # skip pages that are too short
     if len(text) < 100:
         return None
