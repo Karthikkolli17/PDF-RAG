@@ -1,0 +1,101 @@
+user_input,category,faithfulness,answer_relevancy,context_precision,context_recall
+What is CSP 554?,course_lookup,0.8571428571428571,0.7709871717087959,0.9999999999,1.0
+What is CS 577?,course_lookup,0.9047619047619048,0.5458140774648071,0.9999999999,1.0
+What is MATH 564?,course_lookup,1.0,0.5872531091260667,0.9999999999,1.0
+What is ECE 543?,course_lookup,1.0,0.5751263106582644,0.49999999995,0.0
+What is ARCH 590?,course_lookup,0.9,0.7040515425834268,0.9999999999,1.0
+What is CS 553?,course_lookup,1.0,0.6404359245220125,0.8333333332916666,0.0
+What is ECE 573?,course_lookup,0.9583333333333334,0.4664429033784642,0.9999999999,0.0
+What is ITMS 564?,course_lookup,0.8181818181818182,0.499009844238113,0.9999999999,0.0
+What is ECE 501?,course_lookup,0.96,0.5290349901496357,0.9999999999666667,1.0
+What is ITMD 524?,course_lookup,0.9523809523809523,0.5117959030374019,0.9999999999,1.0
+What is CSP 570?,course_lookup,1.0,0.5958564781652305,0.9999999999,0.0
+What is ITMD 514?,course_lookup,0.9090909090909091,0.20655379676918784,0.0,0.0
+What is ITMD 521?,course_lookup,0.9230769230769231,0.49316833053546655,0.0,0.0
+What are the prerequisites for CSP 554?,course_lookup,0.75,0.828154715753397,0.9999999999,1.0
+What is the prerequisite for CS 577?,course_lookup,1.0,0.8096088767554841,0.9999999999,1.0
+How many credits is CS 577?,course_lookup,0.5,0.9999999999997681,0.8333333332916666,1.0
+What does CSP 554 cover?,course_lookup,0.5,0.6862907091136604,0.9999999999,1.0
+Tell me about ECE 543,course_lookup,1.0,0.6518876681652145,0.5833333333041666,0.0
+How many credits is MATH 564?,course_lookup,0.3333333333333333,0.8724999145823373,0.8333333332916666,1.0
+What is MATH 474?,course_lookup,0.0,0.0,0.0,0.5
+Can I take CSP 554 without CS 425?,course_lookup,0.75,0.7895136844961151,0.9999999999,1.0
+Describe the CS 577 course in detail,course_lookup,0.8571428571428571,,,0.5
+What courses does ITMD department offer?,course_lookup,0.8,0.646192270670971,0.0,0.0
+What are the ECE department graduate courses?,course_lookup,0.7272727272727273,0.6907034589875614,0.0,0.0
+What is the credit load for ECE 543?,course_lookup,1.0,0.7312924722006368,0.9999999999,1.0
+What are the requirements for MS in Computer Science?,program_requirements,,0.658842704700615,0.9999999999,0.5
+What are the requirements for PhD in Computer Science?,program_requirements,1.0,,,1.0
+What is the curriculum for Master of Cybersecurity?,program_requirements,0.8125,0.875330393372947,0.0,0.0
+What courses are required for MS in Data Science?,program_requirements,1.0,,0.9999999999,0.0
+How many credits does the Master of Cybersecurity require?,program_requirements,0.5,0.9074194233432072,0.8333333332916666,1.0
+What are the core course credits for Master of Cybersecurity?,program_requirements,0.5,0.8743914355147444,0.9999999999,1.0
+What is the minimum GPA required for MS in Computer Science admission?,program_requirements,1.0,0.8624576232188689,0.99999999998,
+What qualifying exams are required for the PhD in Computer Science?,program_requirements,0.6666666666666666,0.7933453701621046,0.9999999999,1.0
+What departments collaborate on the MS in Data Science?,program_requirements,0.5,0.7743485491485428,0.3333333333,0.0
+Is CSP 570 required for data science students?,program_requirements,0.9,0.7985367346822425,0.9999999999,1.0
+What is the difference between MS and PhD requirements at IIT?,program_requirements,0.6296296296296297,0.6593854004495792,0.49999999995,0.0
+What research contribution is required for the PhD?,program_requirements,1.0,0.7347460802747353,,0.0
+How is the MS in Data Science structured?,program_requirements,0.8181818181818182,0.5994482930056219,0.0,0.5
+What programs does the Computer Science department offer?,program_requirements,0.9722222222222222,0.9680138556786314,0.3333333333,1.0
+What elective requirements exist for the Master of Cybersecurity?,program_requirements,1.0,0.9237904608475563,0.0,0.0
+What are the PhD in CS admission GPA requirements?,program_requirements,1.0,0.0,,0.0
+What is the MS in Computer Science GRE requirement?,program_requirements,1.0,0.8166824903227677,0.49999999995,1.0
+What does the Master of Data Science program include?,program_requirements,0.9473684210526315,0.663886271750148,,0.0
+What is the minimum credit requirement for all master's degrees?,program_requirements,0.5,0.7713008485877707,0.9999999999666667,1.0
+Does the PhD require a dissertation?,program_requirements,1.0,0.6390389582031141,0.9999999999666667,0.6666666666666666
+What are the GPA requirements for graduate admission?,admission,0.0,0.7551289293324639,0.5888888888692593,0.5
+Can GRE be waived for engineering applicants?,admission,0.6666666666666666,0.941040206447738,0.6999999999766667,0.5
+Are letters of recommendation required for graduate admission?,admission,0.0,0.6800969373152744,0.9999999999,1.0
+What GRE scores are required for MS in Computer Science?,admission,1.0,0.8973826634015687,0.9999999999,0.5
+Can the GRE be waived for MS in Computer Science?,admission,0.6666666666666666,0.8386179179575756,0.99999999998,1.0
+What is the minimum GRE analytical writing score?,admission,0.6,0.9493993551017589,0.7555555555303703,0.0
+How many letters of recommendation are required?,admission,0.7777777777777778,0.8042920235333,0.9999999999,1.0
+Is there an English proficiency requirement?,admission,0.6,0.6721176196742628,,1.0
+What documents are required for a PhD application?,admission,0.8125,0.9999999999997953,0.499999999975,1.0
+What is conditional admission?,admission,0.9375,0.8341304438951247,0.9999999999,0.0
+Can transfer credits be applied toward a graduate degree?,admission,1.0,0.6694092514963197,0.8333333332916666,0.0
+What is the GPA requirement for PhD programs?,admission,1.0,0.8425135726686811,0.0,0.5
+Is a bachelor's degree required for graduate admission?,admission,1.0,0.6392727811466459,0.94999999997625,1.0
+What is the GRE combined score requirement for MS programs?,admission,,0.7408973367149395,0.0,0.0
+Are GRE scores required for all graduate programs?,admission,0.8181818181818182,0.892561573427176,0.36666666664833336,0.6666666666666666
+What are the credit hour requirements for a PhD?,policy,0.9,0.7903239495920036,0.0,0.0
+How many credits are needed for a master's degree?,policy,0.0,0.7385645127099104,0.5833333333041666,1.0
+What is the time limit to complete a PhD?,policy,0.5,0.7079461692689941,0.9999999999666667,1.0
+What is the policy for incomplete grades?,policy,1.0,0.7176335609166813,,0.5
+What is the policy for repeating courses?,policy,0.9090909090909091,0.8535098244621278,0.3333333333,1.0
+How many courses can a graduate student repeat?,policy,1.0,0.9284505409737713,0.9999999999,1.0
+What happens if a PhD student does not finish in 6 years?,policy,0.8,0.3933710658268488,0.9999999999666667,1.0
+What is the minimum GPA to maintain good standing?,policy,1.0,0.8142076644094313,0.8041666666465626,1.0
+How is an incomplete grade resolved?,policy,1.0,0.8335550861053646,0.8333333332916666,1.0
+How many dissertation credits are required for the PhD?,policy,1.0,0.8019045938065217,,0.0
+What are the conditions for receiving an incomplete grade?,policy,0.8181818181818182,0.9779437165794157,0.0,1.0
+Can a graduate student repeat more than 3 courses?,policy,1.0,0.8230447963378774,0.0,1.0
+What is the doctoral advising session?,policy,1.0,0.8141846784466171,0.9999999999,0.5
+What is academic probation for graduate students?,policy,1.0,0.8377452091584355,0.3333333333,1.0
+Is there a minimum GPA for PhD admission different from master's?,policy,0.7142857142857143,0.6997096851731262,,0.3333333333333333
+What is the Employer Tuition Deferment Plan?,financial,1.0,0.9149107426269811,0.9999999999,1.0
+How does employer tuition reimbursement work at IIT?,financial,0.9230769230769231,0.6625467818058502,0.9999999999,1.0
+Are graduate assistantships available at IIT?,financial,0.8888888888888888,0.661168642487083,0.9999999999,1.0
+Who is eligible for the Employer Tuition Deferment Plan?,financial,0.75,0.9307452844719794,0.9999999999,1.0
+What financial support options exist for graduate students?,financial,0.42857142857142855,0.8195242217639133,0.0,0.6666666666666666
+What courses cover deep learning?,topic_search,0.8333333333333334,0.92658954964448,0.3333333333,1.0
+What courses cover cloud computing?,topic_search,0.8260869565217391,0.8950668889309185,0.0,1.0
+What courses are available on machine learning?,topic_search,1.0,0.8223656734162162,0.0,0.0
+Which courses focus on network security?,topic_search,0.5,0.8476083326494436,0.49999999995,0.0
+What courses cover big data?,topic_search,0.8125,0.8875921517220687,0.0,0.5
+What statistics courses are available for graduate students?,topic_search,,0.937635391121659,0.0,0.0
+Are there courses on cybersecurity?,topic_search,0.7,0.8630783483147487,0.0,0.0
+What courses cover database systems?,topic_search,1.0,0.9124151031347415,0.0,0.0
+What AI-related courses are offered?,topic_search,0.8125,0.834194352278118,0.0,0.0
+What courses are recommended for a data science career?,topic_search,0.9666666666666667,0.9760862563670597,0.49999999995,0.0
+What is the undergraduate tuition at IIT?,adversarial,1.0,0.5875479512987035,0.49999999995,0.0
+Where are the IIT dormitories located?,adversarial,1.0,0.7222250545909209,0.0,0.5
+What is the weather like in Chicago?,adversarial,1.0,0.0,0.0,0.0
+How do I apply for a student visa to study at IIT?,adversarial,1.0,0.0,0.0,0.0
+What is the parking situation on the IIT main campus?,adversarial,1.0,0.5647156247307613,0.0,0.0
+Compare CS 577 and ITMD 524 for someone interested in deep learning,adversarial,0.6666666666666666,0.9173063456158123,0.99999999995,1.0
+What is the difference between the MS and the Master of Engineering?,adversarial,0.0,0.0,0.0,0.3333333333333333
+Can I take CSP 554 and CS 577 in the same semester?,adversarial,1.0,0.8897627314785824,0.0,0.5
+What is the ranking of IIT's Computer Science program?,adversarial,0.0,0.0,0.9999999999666667,0.0
+How does IIT compare to other universities for data science?,adversarial,1.0,0.0,0.5833333333041666,0.0

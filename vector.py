@@ -152,6 +152,13 @@ def merge(results_list, n):
 
 def query(text, n=3):
     codes = extract_codes(text)
+
+    intent, chunk_type = detect(text)
+
+    # Admission queries span many program sections; more chunks reduce LLM extrapolation.
+    if intent == "admission":
+        n = max(n, 5)
+
     top = n * 5
 
     semantic_results = semantic(text, top)
@@ -171,11 +178,15 @@ def query(text, n=3):
             fused = rrf([semantic_results, bm25_results])
             return merge(code_results + [fused], n)
 
-    chunk_type = detect(text)[1]
-
     if chunk_type:
         type_results = filter_by_type(chunk_type, text, top)
-        fused = rrf([semantic_results, bm25_results, type_results])
+        if intent == "topic_search":
+            # BM25 matches topic words (e.g. "deep", "learning") across all chunk types,
+            # polluting RRF for these queries. Type-filtered semantic is the right signal;
+            # double-weight it and drop BM25.
+            fused = rrf([type_results, type_results, semantic_results])
+        else:
+            fused = rrf([semantic_results, bm25_results, type_results])
     else:
         fused = rrf([semantic_results, bm25_results])
 
