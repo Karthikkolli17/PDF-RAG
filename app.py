@@ -4,6 +4,9 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, field_validator
 from vector import query
 from generate import generate
+from router import detect
+
+OUT_OF_SCOPE_REPLY = "That falls outside what I can help with. Please contact the relevant IIT office directly."
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -30,6 +33,9 @@ def index():
 
 @app.post("/chat")
 def chat(request: ChatRequest):
+    intent, _ = detect(request.message)
+    if intent == "out_of_scope":
+        return {"answer": OUT_OF_SCOPE_REPLY, "sources": []}
     try:
         results = query(request.message)
         answer = generate(request.message, results)

@@ -42,7 +42,7 @@ If the provided context does not contain sufficient information to answer the qu
 
 **Scope**
 You only answer questions about IIT graduate programs, courses, admission, and academic policies. \
-For questions outside this scope — housing, student life, undergraduate programs — respond with: \
+For questions outside this scope, respond with: \
 "That falls outside what I can help with. Please contact the relevant IIT office directly."
 
 **Tone**
@@ -51,15 +51,14 @@ over reassurance."""
 
 
 def build_context(results):
-
     chunks = []
-    
     for doc, meta in zip(results["documents"][0], results["metadatas"][0]):
         page = meta.get("page", "?")
         course = meta.get("course_code", "")
-        label = f"[Page {page}]" + (f" {course}" if course else "")
+        program = meta.get("program", "")
+        chunk_type = meta.get("type", "")
+        label = f"[Page {page} | {chunk_type}" + (f" | {program}" if program else "") + "]" + (f" {course}" if course else "")
         chunks.append(f"{label}\n{doc}")
-
     return "\n\n---\n\n".join(chunks)
 
 

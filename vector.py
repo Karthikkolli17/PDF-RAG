@@ -6,6 +6,7 @@ from nltk.corpus import stopwords
 from sentence_transformers import CrossEncoder
 import nltk
 from router import detect
+from metadata import DEPT_MAP
 
 nltk.download("stopwords", quiet=True)
 STOPWORDS = set(stopwords.words("english"))
@@ -15,7 +16,7 @@ ef = embedding_functions.SentenceTransformerEmbeddingFunction(
 )
 client = chromadb.PersistentClient(path="./chroma_db")
 
-collection = client.get_or_create_collection(name="grad_catalog_v5", embedding_function=ef)
+collection = client.get_or_create_collection(name="grad_catalog_v6", embedding_function=ef)
 
 cross_encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
 
@@ -25,7 +26,7 @@ def tokenize(text):
     return [w for w in text.lower().split() if w not in STOPWORDS]
 
 corpus = [tokenize(doc) for doc in catalog["documents"]]
-bm25 = BM25Okapi(corpus)
+bm25 = BM25Okapi(corpus) if corpus else None
 
 def store(chunks):
 
@@ -48,6 +49,8 @@ def store(chunks):
     print(f"Stored {len(documents)} chunks in ChromaDB")
 
 def bm25_search(text, n):
+    if bm25 is None:
+        return {"documents": [[]], "metadatas": [[]], "distances": [[]], "ids": [[]]}
     tokens = tokenize(text)
     scores = bm25.get_scores(tokens)
     top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:n]
@@ -108,6 +111,20 @@ def rerank(text, results, n):
 def extract_codes(text):
     return re.findall(r'\b[A-Z]{2,5}\s\d{3}\b', text)
 
+def extract_dept(text):
+    tokens = re.findall(r'\b([A-Z]{2,5})\b', text)
+    for token in tokens:
+        if token in DEPT_MAP:
+            return DEPT_MAP[token]
+    return None
+
+def extract_program(text):
+    match = re.search(
+        r'\b(?:MS|M\.S\.|PhD|Ph\.D\.|Master of|Master in|M\.S\s+in)\s+(?:in\s+)?([A-Za-z ]+?)(?:\?|$|,|\s+(?:program|curriculum|require|admission|course|credit|degree|student|gpa|gre))',
+        text, re.IGNORECASE
+    )
+    return match.group(1).strip() if match else None
+
 def semantic(text, n):
     return collection.query(query_texts=[text], n_results=n)
 
@@ -155,8 +172,8 @@ def query(text, n=3):
 
     intent, chunk_type = detect(text)
 
-    # Admission queries span many program sections; more chunks reduce LLM extrapolation.
-    if intent == "admission":
+    # Admission and program queries span many sections; more chunks reduce LLM extrapolation.
+    if intent in ("admission", "program_requirements"):
         n = max(n, 5)
 
     top = n * 5
@@ -185,6 +202,51 @@ def query(text, n=3):
             # polluting RRF for these queries. Type-filtered semantic is the right signal;
             # double-weight it and drop BM25.
             fused = rrf([type_results, type_results, semantic_results])
+        elif intent == "program_requirements":
+            program_name = extract_program(text)
+            if program_name:
+                try:
+                    prog_results = filter_by_type("curriculum", text, top)
+                    matching_docs = [
+                        (doc, meta, cid)
+                        for doc, meta, cid in zip(
+                            prog_results["documents"][0],
+                            prog_results["metadatas"][0],
+                            prog_results["ids"][0],
+                        )
+                        if program_name.lower() in (meta.get("program", "") + " " + doc).lower()
+                    ]
+                    if matching_docs:
+                        prog_filtered = {
+                            "documents": [[m[0] for m in matching_docs]],
+                            "metadatas": [[m[1] for m in matching_docs]],
+                            "ids": [[m[2] for m in matching_docs]],
+                            "distances": [[0.0] * len(matching_docs)],
+                        }
+                        fused = rrf([semantic_results, bm25_results, type_results, prog_filtered])
+                    else:
+                        fused = rrf([semantic_results, bm25_results, type_results])
+                except Exception:
+                    fused = rrf([semantic_results, bm25_results, type_results])
+            else:
+                fused = rrf([semantic_results, bm25_results, type_results])
+        elif intent == "admission":
+            dept_name = extract_dept(text)
+            if dept_name:
+                try:
+                    dept_results = collection.query(
+                        query_texts=[text],
+                        where={"$and": [{"type": {"$eq": "prose"}}, {"department": {"$eq": dept_name}}]},
+                        n_results=min(top, 10),
+                    )
+                    if dept_results["documents"][0]:
+                        # rerank within dept-specific chunks only — prevents other
+                        # departments' structurally identical admission tables from
+                        # outscoring the correct department's chunks
+                        return rerank(text, dept_results, n)
+                except Exception:
+                    pass
+            fused = rrf([semantic_results, bm25_results, type_results])
         else:
             fused = rrf([semantic_results, bm25_results, type_results])
     else:

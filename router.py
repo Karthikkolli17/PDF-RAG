@@ -5,6 +5,7 @@ from questions import questions
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
 INTENT = {
+    "out_of_scope": None,
     "topic_search": "descriptive",
     "program_requirements": "curriculum",
     "policy": "prose",

@@ -2,10 +2,34 @@ from pageSplitter import load
 from chunking import semantic_chunk, descriptions
 from classifier import classify
 from vector import store, query
-from metadata import extract_descp_metadata, extract_curriculum_metadata
+from metadata import extract_descp_metadata, extract_curriculum_metadata, DEPT_MAP
+import re
 import json
 
 pages = load("IIT Graduate Catalog 2024-2025_final.pdf")
+
+# first pass: build page → department map from pages that have course codes
+page_dept = {}
+for page in pages:
+    codes = re.findall(r'[A-Z]{2,5}\s\d{3}', page["text"])
+    for code in codes:
+        prefix = code.split()[0]
+        if prefix in DEPT_MAP:
+            page_dept[page["page"]] = DEPT_MAP[prefix]
+            break
+
+def nearest_dept(num):
+    if num in page_dept:
+        return page_dept[num]
+    # look forward first — intro/admission pages precede course description pages
+    for offset in range(1, 15):
+        if num + offset in page_dept:
+            return page_dept[num + offset]
+    # then backward — for pages that follow a section (thesis info, cert programs)
+    for offset in range(1, 15):
+        if num - offset in page_dept:
+            return page_dept[num - offset]
+    return None
 
 doc_chunks = []
 
@@ -24,8 +48,13 @@ for page in pages:
     else:
         chunks = semantic_chunk(text)
 
+    dept = nearest_dept(num)
+
     for chunk in chunks:
         meta = {"page": num, "type": label}
+
+        if dept:
+            meta["department"] = dept
 
         if label == "descriptive":
             meta.update(extract_descp_metadata(chunk))
