@@ -560,10 +560,20 @@
     content.appendChild(prose);
 
     if (sources && sources.length) {
+      const citedPages = new Set();
+      const pageRegex = /(?:p\.?\s*|page\s+)(\d+)/gi;
+      let m;
+      while ((m = pageRegex.exec(text)) !== null) citedPages.add(m[1]);
+
       const seen = new Set();
       const row2 = document.createElement('div');
       row2.className = 'sources';
+      if (!citedPages.size) {
+        // answer didn't cite any pages (e.g. clarifying question, OOS reply) — show nothing
+        row.appendChild(av); row.appendChild(content); messages.appendChild(row); scrollBottom(); return;
+      }
       sources.forEach(s => {
+        if (!citedPages.has(String(s.page))) return;
         const key = `p${s.page}`;
         if (seen.has(key)) return;
         seen.add(key);
@@ -572,7 +582,7 @@
         chip.textContent = s.course ? `${s.course} · p${s.page}` : `Page ${s.page}`;
         row2.appendChild(chip);
       });
-      content.appendChild(row2);
+      if (row2.children.length) content.appendChild(row2);
     }
 
     row.appendChild(av);

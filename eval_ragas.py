@@ -15,6 +15,9 @@ from ragas import evaluate
 from datasets import Dataset
 from vector import query
 from generate import generate
+from planner import plan
+
+OUT_OF_SCOPE_REPLY = "That falls outside what I can help with. Please contact the relevant IIT office directly."
 from eval_dataset import dataset as eval_data
 
 load_dotenv()
@@ -92,8 +95,16 @@ start = time.time()
 for i, item in enumerate(eval_data, 1):
     q = item["question"]
     t = time.time()
-    results = query(q)
-    answer = generate(q, results)
+    p = plan(q)
+    if p["intent"] == "out_of_scope":
+        answer = OUT_OF_SCOPE_REPLY
+        results = {"documents": [[]]}
+    elif p.get("is_ambiguous"):
+        answer = p.get("clarification") or "Could you be more specific?"
+        results = {"documents": [[]]}
+    else:
+        results = query(q, plan_dict=p)
+        answer = generate(q, results, plan=p)
     questions.append(q)
     answers.append(answer)
     contexts.append(results["documents"][0])

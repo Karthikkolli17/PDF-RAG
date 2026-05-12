@@ -7,3 +7,6 @@ chroma_db/
 .env
 chunks.json
 CLAUDE.md
+eval_*.log
+eval_*.csv
+*.log

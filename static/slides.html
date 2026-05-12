@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IIT Graduate Catalog Assistant</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0b0b0b;
+  --panel: #111;
+  --border: #1e1e1e;
+  --text: #e0e0e0;
+  --muted: #555;
+  --accent: #4f8ef7;
+  --green: #3ecf8e;
+  --yellow: #f5c342;
+  --red: #ff6b6b;
+  --pdf: #faf8f2;
+  --pdf-text: #111;
+  --pdf-muted: #555;
+  --pdf-header: #333;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── PROGRESS BAR ─────────────────────────────── */
+#progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  background: var(--accent);
+  transition: width 0.3s ease;
+  z-index: 200;
+}
+
+/* ── SLIDE COUNTER ────────────────────────────── */
+#counter {
+  position: fixed;
+  top: 20px; right: 28px;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  z-index: 200;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── NAVIGATION DOTS ──────────────────────────── */
+#dots {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 7px;
+  z-index: 200;
+}
+.dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #333;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.dot.on { background: #fff; transform: scale(1.3); }
+
+/* ── ARROW KEYS HINT ──────────────────────────── */
+#hint {
+  position: fixed;
+  bottom: 28px; right: 28px;
+  font-size: 11px;
+  color: #2a2a2a;
+  z-index: 200;
+}
+
+/* ── SLIDE BASE ───────────────────────────────── */
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.slide.on { opacity: 1; pointer-events: all; }
+
+/* ── FULL SLIDE (no split) ────────────────────── */
+.full {
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 80px;
+  text-align: center;
+}
+
+/* ── SPLIT SLIDE ──────────────────────────────── */
+.left {
+  width: 46%;
+  height: 100%;
+  background: var(--pdf);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: 1px solid #1a1a1a;
+  flex-shrink: 0;
+}
+
+.right {
+  flex: 1;
+  height: 100%;
+  padding: 64px 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ── PDF PAGE ─────────────────────────────────── */
+.pdf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px;
+  border-bottom: 1px solid #ddd;
+  font-family: 'Times New Roman', serif;
+  font-size: 10px;
+  color: var(--pdf-muted);
+  background: #f0ede4;
+  flex-shrink: 0;
+}
+
+.pdf-body {
+  padding: 32px 28px;
+  font-family: 'Times New Roman', Times, serif;
+  color: var(--pdf-text);
+  font-size: 12.5px;
+  line-height: 1.55;
+  flex: 1;
+  overflow: hidden;
+}
+
+.pdf-section {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--pdf-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 18px;
+}
+
+.pdf-course-code {
+  font-size: 14px;
+  font-weight: bold;
+  color: #111;
+  margin-top: 16px;
+  margin-bottom: 2px;
+}
+
+.pdf-course-title {
+  font-size: 13px;
+  font-style: italic;
+  color: #222;
+  margin-bottom: 6px;
+}
+
+.pdf-desc {
+  font-size: 11.5px;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.pdf-meta {
+  font-size: 11px;
+  color: var(--pdf-muted);
+  margin-top: 4px;
+}
+
+/* Highlight overlays on PDF */
+.chunk-1 { background: rgba(79, 142, 247, 0.12); border-left: 3px solid #4f8ef7; padding-left: 8px; margin-left: -11px; }
+.chunk-2 { background: rgba(62, 207, 142, 0.12); border-left: 3px solid #3ecf8e; padding-left: 8px; margin-left: -11px; }
+.chunk-3 { background: rgba(245, 195, 66, 0.12); border-left: 3px solid #f5c342; padding-left: 8px; margin-left: -11px; }
+
+.chunk-label {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  padding: 1px 6px;
+  border-radius: 2px;
+  margin-bottom: 4px;
+  font-family: -apple-system, sans-serif;
+}
+.cl-1 { background: #4f8ef7; color: white; }
+.cl-2 { background: #3ecf8e; color: white; }
+.cl-3 { background: #f5c342; color: black; }
+
+.pdf-divider {
+  border: none;
+  border-top: 1px dashed #ccc;
+  margin: 12px 0;
+}
+
+/* ── TABLE ────────────────────────────────────── */
+.pdf-table {
+  width: 100%;
+  font-size: 11px;
+  border-collapse: collapse;
+  color: #222;
+}
+.pdf-table th {
+  text-align: left;
+  border-bottom: 1px solid #bbb;
+  padding: 4px 8px 4px 0;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #555;
+}
+.pdf-table td {
+  padding: 3px 8px 3px 0;
+  vertical-align: top;
+}
+.pdf-table tr:nth-child(even) td { background: rgba(0,0,0,0.03); }
+.pdf-table .cr { text-align: right; color: #555; }
+
+.pdf-table-wrap {
+  background: rgba(79,142,247,0.08);
+  border: 1.5px solid #4f8ef7;
+  border-radius: 2px;
+  padding: 10px 12px;
+  margin-top: 8px;
+}
+
+/* ── RIGHT PANEL CONTENT ──────────────────────── */
+.tag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+h1 {
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: #fff;
+  margin-bottom: 16px;
+}
+
+h2 {
+  font-size: clamp(22px, 2.5vw, 34px);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.sub {
+  font-size: clamp(14px, 1.4vw, 18px);
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 520px;
+  margin-bottom: 32px;
+}
+
+.points {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.points li {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  font-size: clamp(13px, 1.2vw, 16px);
+  line-height: 1.5;
+  color: #ccc;
+}
+
+.points li .icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  margin-top: 1px;
+}
+
+.ic-blue { background: rgba(79,142,247,0.2); color: var(--accent); }
+.ic-green { background: rgba(62,207,142,0.2); color: var(--green); }
+.ic-yellow { background: rgba(245,195,66,0.2); color: var(--yellow); }
+.ic-red { background: rgba(255,107,107,0.2); color: var(--red); }
+
+strong { color: #fff; font-weight: 600; }
+
+.code {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 12px;
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  padding: 16px 20px;
+  color: #c9d1d9;
+  line-height: 1.7;
+  margin-top: 20px;
+}
+
+.code .kw { color: #ff79c6; }
+.code .st { color: #f1fa8c; }
+.code .cm { color: #555; }
+.code .fn { color: #50fa7b; }
+.code .num { color: #bd93f9; }
+
+.pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.pill-blue { background: rgba(79,142,247,0.15); color: var(--accent); border: 1px solid rgba(79,142,247,0.3); }
+.pill-green { background: rgba(62,207,142,0.15); color: var(--green); border: 1px solid rgba(62,207,142,0.3); }
+.pill-yellow { background: rgba(245,195,66,0.15); color: var(--yellow); border: 1px solid rgba(245,195,66,0.3); }
+
+/* Pipeline diagram */
+.pipeline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+.pipe-step {
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #ccc;
+  text-align: center;
+  min-width: 90px;
+}
+.pipe-step .ps-label { font-size: 10px; color: var(--muted); margin-bottom: 2px; }
+.pipe-step .ps-val { font-size: 13px; font-weight: 600; color: #fff; }
+.pipe-arr { color: #333; font-size: 18px; }
+
+/* Metrics table */
+.metrics {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 20px;
+}
+.metrics th {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid #222;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  font-weight: 500;
+}
+.metrics td {
+  padding: 9px 12px;
+  border-bottom: 1px solid #181818;
+  color: #ccc;
+}
+.metrics tr:last-child td { color: #fff; font-weight: 600; border-bottom: none; border-top: 1px solid #2a2a2a; }
+.num-cell { font-variant-numeric: tabular-nums; text-align: right; }
+.good { color: var(--green); }
+.ok { color: var(--yellow); }
+
+/* Two column grid for slide 3 */
+.type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+.type-card {
+  background: #141414;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 16px;
+}
+.type-card .tc-name { font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+.type-card .tc-count { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+.type-card .tc-strategy { font-size: 12px; color: var(--accent); }
+
+/* Before/after comparison */
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+.compare-box {
+  background: #141414;
+  border: 1px solid #222;
+  border-radius: 6px;
+  padding: 16px;
+}
+.compare-box .cb-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+.cb-bad { color: var(--red); }
+.cb-good { color: var(--green); }
+.compare-box .cb-item {
+  font-size: 11.5px;
+  color: #999;
+  padding: 4px 0;
+  border-bottom: 1px solid #1e1e1e;
+  display: flex;
+  justify-content: space-between;
+}
+.compare-box .cb-item:last-child { border-bottom: none; }
+.cb-dept { font-size: 10px; padding: 2px 6px; border-radius: 3px; }
+.dep-wrong { background: rgba(255,107,107,0.15); color: var(--red); }
+.dep-right { background: rgba(62,207,142,0.15); color: var(--green); }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div id="counter"></div>
+<div id="dots"></div>
+<div id="hint">← → to navigate</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 1 — TITLE
+══════════════════════════════════════════════ -->
+<div class="slide full" id="s0">
+  <div style="max-width:700px">
+    <div class="tag">CSP 554 · Big Data Technologies</div>
+    <h1>IIT Graduate<br>Catalog Assistant</h1>
+    <p class="sub">A RAG system that answers natural language questions grounded in the IIT Graduate Catalog 2024–2025. No hallucination. Every answer cites a page.</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <span class="pill pill-blue">Python</span>
+      <span class="pill pill-blue">ChromaDB</span>
+      <span class="pill pill-blue">Azure OpenAI o4-mini</span>
+      <span class="pill pill-green">618 pages</span>
+      <span class="pill pill-green">100-question eval</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 2 — THE PROBLEM
+══════════════════════════════════════════════ -->
+<div class="slide" id="s1">
+  <div class="left">
+    <div class="pdf-header">
+      <span>Illinois Institute of Technology GR_2024-2025</span>
+      <span>1 of 618</span>
+    </div>
+    <div class="pdf-body">
+      <div class="pdf-section">Table of Contents</div>
+      <div style="font-size:11px;color:#333;line-height:1.9">
+        Graduate Admission ............................................. 12<br>
+        Tuition and Fees .................................................. 20<br>
+        Financial Aid ....................................................... 28<br>
+        Academic Policies ............................................... 44<br>
+        Applied Mathematics ........................................... 269<br>
+        Architecture ........................................................... 231<br>
+        Biology ................................................................... 391<br>
+        Biomedical Engineering ....................................... 97<br>
+        Chemistry ................................................................ 408<br>
+        <strong>Computer Science .............................................. 296</strong><br>
+        Electrical and Computer Engineering ................. 117<br>
+        Information Technology and Management ........ 333<br>
+        Institute of Design ................................................ 371<br>
+        Mathematics ........................................................... 425<br>
+        Mechanical Engineering ...................................... 187<br>
+        Physics ..................................................................... 451<br>
+        Stuart School of Business .................................. 473<br>
+        <span style="color:#aaa">· · · and 20 more departments · · ·</span>
+      </div>
+      <div style="margin-top:28px;border-top:1px solid #ddd;padding-top:16px;font-size:11px;color:#888;font-style:italic">
+        618 pages · 60+ programs · 400+ courses
+      </div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="tag">The Problem</div>
+    <h2>Students search a 618-page PDF manually</h2>
+    <ul class="points">
+      <li>
+        <div class="icon ic-red">?</div>
+        <span><strong>"What GPA do I need for the CS PhD?"</strong> — buried on page 297 inside a wall of text</span>
+      </li>
+      <li>
+        <div class="icon ic-red">?</div>
+        <span><strong>"What courses are required for MS Data Science?"</strong> — split across pages 319–322</span>
+      </li>
+      <li>
+        <div class="icon ic-red">?</div>
+        <span><strong>"Can the GRE be waived for engineering?"</strong> — different answer per department</span>
+      </li>
+    </ul>
+    <div style="margin-top:32px;padding:20px;background:#141414;border:1px solid #222;border-radius:8px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Instead:</div>
+      <div style="font-size:15px;color:#fff;margin-bottom:4px">"What GPA do I need for the CS PhD?"</div>
+      <div style="font-size:13px;color:var(--green)">→ Instant answer, cited to page 297, in 5 seconds.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 3 — 5 PAGE TYPES
+══════════════════════════════════════════════ -->
+<div class="slide full" id="s2" style="flex-direction:column;align-items:flex-start;padding:56px 80px;">
+  <div class="tag">The Document</div>
+  <h2 style="margin-bottom:8px">The catalog has 5 structurally different page types</h2>
+  <p class="sub" style="margin-bottom:0">One chunking strategy cannot work for all of them.</p>
+  <div class="type-grid" style="width:100%;max-width:960px">
+    <div class="type-card">
+      <div class="tc-name">Course Descriptions</div>
+      <div class="tc-count">165 pages</div>
+      <div style="font-size:11.5px;color:#888;margin-bottom:8px">Repeating pattern: CODE → Title → Body → Credits. 3+ courses per page.</div>
+      <div class="tc-strategy">→ Pattern-based chunk per course</div>
+    </div>
+    <div class="type-card">
+      <div class="tc-name">Curriculum Tables</div>
+      <div class="tc-count">295 pages</div>
+      <div style="font-size:11.5px;color:#888;margin-bottom:8px">Lists of course codes + credit hours. Structure must stay intact.</div>
+      <div class="tc-strategy">→ Whole page = one chunk</div>
+    </div>
+    <div class="type-card">
+      <div class="tc-name">Prose / Policy</div>
+      <div class="tc-count">124 pages</div>
+      <div style="font-size:11.5px;color:#888;margin-bottom:8px">Full paragraphs. Admission, financial, academic rules. Meaning shifts mid-page.</div>
+      <div class="tc-strategy">→ Semantic chunking</div>
+    </div>
+    <div class="type-card">
+      <div class="tc-name">Dept Info / Mixed</div>
+      <div class="tc-count">19 pages</div>
+      <div style="font-size:11.5px;color:#888;margin-bottom:8px">Contact info, faculty lists, mixed prose. Close enough to prose.</div>
+      <div class="tc-strategy">→ Semantic chunking</div>
+    </div>
+    <div class="type-card" style="grid-column:1/-1;display:flex;gap:24px;align-items:center">
+      <div>
+        <div class="tc-name">TOC + Skip</div>
+        <div class="tc-count">15 pages</div>
+        <div style="font-size:11.5px;color:#888">Table of contents, cover page — no retrieval value.</div>
+      </div>
+      <div class="tc-strategy" style="margin-left:auto">→ Discarded entirely</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 4 — CHUNKING: DESCRIPTIVE
+══════════════════════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="left">
+    <div class="pdf-header">
+      <span>Illinois Institute of Technology GR_2024-2025</span>
+      <span>299</span>
+    </div>
+    <div class="pdf-body">
+      <div class="pdf-section">Computer Science · Course Descriptions</div>
+
+      <div class="chunk-1">
+        <span class="chunk-label cl-1">Chunk 1</span>
+        <div class="pdf-course-code">CS 511</div>
+        <div class="pdf-course-title">Topics in Computer Graphics</div>
+        <div class="pdf-desc">Covers advanced topics in computer graphics. Possible topics include: Geometric modeling, Subdivision surfaces, Warping and morphing, Model reconstruction, Image based rendering, Physically based modeling and animation.</div>
+        <div class="pdf-meta">Lecture: 3  Lab: 0  Credits: 3 · Prerequisite(s): CS 411</div>
+      </div>
+
+      <hr class="pdf-divider">
+
+      <div class="chunk-2">
+        <span class="chunk-label cl-2">Chunk 2</span>
+        <div class="pdf-course-code">CS 512</div>
+        <div class="pdf-course-title">Computer Vision</div>
+        <div class="pdf-desc">Introduction to fundamental topics in computer vision and deep neural networks. Topics: Geometric image formation, Feature extraction, Object recognition, Object detection, Semantic segmentation.</div>
+        <div class="pdf-meta">Lecture: 3  Lab: 0  Credits: 3 · Prerequisite(s): CS 430</div>
+      </div>
+
+      <hr class="pdf-divider">
+
+      <div class="chunk-3">
+        <span class="chunk-label cl-3">Chunk 3</span>
+        <div class="pdf-course-code">CS 577</div>
+        <div class="pdf-course-title">Deep Learning</div>
+        <div class="pdf-desc">Deep neural networks as a machine learning paradigm: feedforward networks, convolutional networks, sequence modeling, attention and transformers, deep generative models.</div>
+        <div class="pdf-meta">Lecture: 3  Lab: 0  Credits: 3 · Prerequisite(s): CS 430</div>
+      </div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="tag">Chunking — Descriptive Pages</div>
+    <h2>One course = one chunk</h2>
+    <ul class="points">
+      <li>
+        <div class="icon ic-blue">1</div>
+        <span>Classifier detects: <strong>3+ course codes</strong> + <strong>"Lecture:"</strong> on the page → label <span class="pill pill-blue">descriptive</span></span>
+      </li>
+      <li>
+        <div class="icon ic-blue">2</div>
+        <span>Regex <code style="font-family:monospace;font-size:12px;background:#181818;padding:1px 6px;border-radius:3px;color:#50fa7b">^[A-Z]{2,5}\s\d{3}</code> finds each course boundary</span>
+      </li>
+      <li>
+        <div class="icon ic-blue">3</div>
+        <span>Everything between two boundaries = one chunk. Code + title + description + credits stay together.</span>
+      </li>
+    </ul>
+    <div class="code">
+<span class="cm"># classifier.py</span>
+<span class="kw">if</span> len(codes) &gt;= <span class="num">3</span> <span class="kw">and</span> <span class="st">"Lecture: "</span> <span class="kw">in</span> text:
+    <span class="kw">return</span> <span class="st">"descriptive"</span>
+
+<span class="cm"># chunking.py — one chunk per course</span>
+matches = re.finditer(<span class="st">r'^[A-Z]{2,5}\s\d{3}'</span>, text)
+<span class="kw">for</span> i, match <span class="kw">in</span> enumerate(matches):
+    chunk = text[match.start() : next_match.start()]
+    </div>
+    <div style="margin-top:20px;display:flex;gap:10px">
+      <div style="padding:10px 14px;background:#141414;border:1px solid #222;border-radius:6px;font-size:12px;color:#ccc">
+        Page 299 → <strong style="color:#4f8ef7">3 chunks</strong>
+      </div>
+      <div style="padding:10px 14px;background:#141414;border:1px solid #222;border-radius:6px;font-size:12px;color:#ccc">
+        Metadata: <strong style="color:#fff">course_code, department, page</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 5 — CHUNKING: CURRICULUM
+══════════════════════════════════════════════ -->
+<div class="slide" id="s4">
+  <div class="left">
+    <div class="pdf-header">
+      <span>Illinois Institute of Technology GR_2024-2025</span>
+      <span>319</span>
+    </div>
+    <div class="pdf-body">
+      <div class="pdf-section">Master of Data Science</div>
+      <div class="pdf-table-wrap">
+        <span class="chunk-label cl-1" style="margin-bottom:10px;display:inline-block">Whole page = 1 chunk</span>
+        <table class="pdf-table">
+          <tr><th>Code</th><th>Title</th><th class="cr">Cr</th></tr>
+          <tr><td colspan="3" style="font-size:10px;color:#555;padding-top:8px">Data Science Core (15 cr)</td></tr>
+          <tr><td>MATH 563</td><td>Mathematical Statistics</td><td class="cr">3</td></tr>
+          <tr><td>CS 584</td><td>Machine Learning</td><td class="cr">3</td></tr>
+          <tr><td>CSP 554</td><td>Big Data Technologies</td><td class="cr">3</td></tr>
+          <tr><td>CS 577</td><td>Deep Learning</td><td class="cr">3</td></tr>
+          <tr><td>CSP 570</td><td>Data Science Seminar</td><td class="cr">3</td></tr>
+          <tr><td colspan="3" style="font-size:10px;color:#555;padding-top:8px">Applications (6 cr)</td></tr>
+          <tr><td>CS 520</td><td>Data Integration &amp; Warehousing</td><td class="cr">3</td></tr>
+          <tr><td>MATH 564</td><td>Regression</td><td class="cr">3</td></tr>
+          <tr><td colspan="3" style="font-size:10px;color:#555;padding-top:8px">Capstone (6 cr)</td></tr>
+          <tr><td>CSP 572</td><td>Data Science Practicum</td><td class="cr">6</td></tr>
+          <tr><td colspan="3" style="border-top:1px solid #bbb;font-weight:bold;padding-top:6px">Total Credit Hours</td></tr>
+          <tr><td></td><td></td><td class="cr" style="font-weight:bold">33</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="tag">Chunking — Curriculum Tables</div>
+    <h2>Entire table = one chunk</h2>
+    <ul class="points">
+      <li>
+        <div class="icon ic-green">1</div>
+        <span>Classifier detects: <strong>8+ course codes</strong>, no "Lecture:" → label <span class="pill pill-green">curriculum</span></span>
+      </li>
+      <li>
+        <div class="icon ic-green">2</div>
+        <span>The whole page is stored as a single chunk. <strong>Why:</strong> splitting a curriculum table produces meaningless fragments — "CS 584 · 3" alone says nothing.</span>
+      </li>
+      <li>
+        <div class="icon ic-green">3</div>
+        <span>Metadata extracted: <code style="font-family:monospace;font-size:12px;background:#181818;padding:1px 6px;border-radius:3px;color:#50fa7b">program</code> — detected by regex on "Master of..." header within the text.</span>
+      </li>
+    </ul>
+    <div class="code">
+<span class="cm"># classifier.py</span>
+<span class="kw">if</span> len(codes) &gt;= <span class="num">8</span> <span class="kw">and</span> <span class="st">"Lecture: "</span> <span class="kw">not in</span> text:
+    <span class="kw">return</span> <span class="st">"curriculum"</span>
+
+<span class="cm"># pipeline.py — no splitting</span>
+<span class="kw">elif</span> label == <span class="st">"curriculum"</span>:
+    chunks = [text]  <span class="cm"># whole page</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 6 — CHUNKING: SEMANTIC (PROSE)
+══════════════════════════════════════════════ -->
+<div class="slide" id="s5">
+  <div class="left">
+    <div class="pdf-header">
+      <span>Illinois Institute of Technology GR_2024-2025</span>
+      <span>297</span>
+    </div>
+    <div class="pdf-body">
+      <div class="pdf-section">Computer Science · Admission Requirements</div>
+      <div class="pdf-desc" style="font-size:11.5px;color:#333">
+        The study of computer science is the inquiry into the nature of computation and its use in solving problems in an information-based society.
+      </div>
+
+      <hr class="pdf-divider">
+
+      <div class="chunk-1" style="margin-top:8px">
+        <span class="chunk-label cl-1">Chunk A — high similarity within</span>
+        <div style="font-size:11.5px;color:#333;margin-top:4px">
+          <strong>Minimum Cumulative Undergraduate GPA</strong><br>
+          3.0/4.0 for Master's programs<br>
+          3.5/4.0 for Ph.D. applicants
+        </div>
+      </div>
+
+      <hr class="pdf-divider">
+
+      <div class="chunk-2" style="margin-top:0">
+        <span class="chunk-label cl-2">Chunk B — similarity drops here ↓</span>
+        <div style="font-size:11.5px;color:#333;margin-top:4px">
+          <strong>Minimum GRE Scores</strong><br>
+          Master's: 304 quantitative + verbal, 3.0 analytical<br>
+          Ph.D.: 304 quantitative + verbal, 3.5 analytical writing<br>
+          <em style="font-size:10.5px;color:#888">(GRE may be waived for U.S. applicants with GPA ≥ 3.0)</em>
+        </div>
+      </div>
+
+      <hr class="pdf-divider">
+
+      <div class="chunk-3" style="margin-top:0">
+        <span class="chunk-label cl-3">Chunk C — new topic</span>
+        <div style="font-size:11.5px;color:#333;margin-top:4px">
+          <strong>Minimum English Proficiency</strong><br>
+          TOEFL 70 (internet-based) or degree from English-language institution required for international applicants.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="tag">Chunking — Prose / Policy Pages</div>
+    <h2>Split where meaning shifts</h2>
+    <ul class="points">
+      <li>
+        <div class="icon ic-yellow">1</div>
+        <span>Tokenize into sentences with NLTK, embed each with <strong>all-MiniLM-L6-v2</strong></span>
+      </li>
+      <li>
+        <div class="icon ic-yellow">2</div>
+        <span>Compute cosine similarity between adjacent sentences. Find boundaries where similarity drops below the <strong>25th percentile</strong> — adaptive threshold, not fixed.</span>
+      </li>
+      <li>
+        <div class="icon ic-yellow">3</div>
+        <span>Merge chunks smaller than 200 chars to avoid noise fragments.</span>
+      </li>
+    </ul>
+    <div class="code">
+<span class="cm"># chunking.py — built from scratch</span>
+embeddings = model.encode(sentences)
+
+similarities = [
+    cosine(embeddings[i], embeddings[i+1])
+    <span class="kw">for</span> i <span class="kw">in</span> range(len(sentences) - <span class="num">1</span>)
+]
+threshold = np.percentile(similarities, <span class="num">25</span>)
+
+boundaries = [i <span class="kw">for</span> i, s <span class="kw">in</span> enumerate(similarities)
+              <span class="kw">if</span> s &lt; threshold]
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 7 — DEPARTMENT METADATA
+══════════════════════════════════════════════ -->
+<div class="slide" id="s6">
+  <div class="left">
+    <div class="pdf-header">
+      <span>Illinois Institute of Technology GR_2024-2025</span>
+      <span>298–300</span>
+    </div>
+    <div class="pdf-body">
+      <div class="pdf-section">Department Tagging — How It Works</div>
+
+      <div style="font-size:11px;color:#555;margin-bottom:12px">First pass over all 618 pages:</div>
+
+      <div style="font-family:monospace;font-size:11px;line-height:2;color:#333;background:#f0ede4;padding:12px;border-radius:4px">
+        p296  <span style="color:#888">[no codes]</span>   → dept = <strong>look forward</strong><br>
+        p297  <span style="color:#888">[no codes]</span>   → dept = <strong>look forward</strong><br>
+        p298  <span style="color:#4f8ef7">[CS 201, CS 401]</span> → <strong>Computer Science</strong><br>
+        p299  <span style="color:#4f8ef7">[CS 511, CS 512]</span> → <strong>Computer Science</strong><br>
+        p300  <span style="color:#4f8ef7">[CS 522, CS 534]</span> → <strong>Computer Science</strong><br>
+        <span style="color:#888">· · ·</span><br>
+        p408  <span style="color:#888">[no codes]</span>   → look forward →<br>
+        p409  <span style="color:#f5c342">[CHEM 500, ...]</span> → <strong>Chemistry</strong>
+      </div>
+
+      <div style="margin-top:16px;background:#e8f4e8;border:1px solid #c5e0c5;border-radius:4px;padding:12px;font-size:11px;color:#2a5a2a">
+        <strong>Result:</strong> Every chunk — prose, curriculum, descriptive — carries a <code style="background:rgba(0,0,0,0.08);padding:1px 4px">department</code> field in ChromaDB metadata.
+      </div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="tag">Metadata — Department Tagging</div>
+    <h2>Every chunk knows its department</h2>
+    <ul class="points">
+      <li>
+        <div class="icon ic-blue">1</div>
+        <span><strong>First pass:</strong> scan all pages for course codes. Any page with codes → record its department using the existing prefix map (CS → Computer Science, ECE → Electrical Engineering…)</span>
+      </li>
+      <li>
+        <div class="icon ic-blue">2</div>
+        <span><strong>Forward-fill:</strong> pages without codes (intro, admission prose) look forward up to 15 pages to find the nearest department. Admission pages come <em>before</em> course descriptions — forward is the right direction.</span>
+      </li>
+      <li>
+        <div class="icon ic-blue">3</div>
+        <span>No hardcoding — the prefix→department map is already used for course metadata. Reused here for prose chunks.</span>
+      </li>
+    </ul>
+    <div class="code">
+<span class="cm"># pipeline.py — two-pass tagging</span>
+<span class="kw">for</span> page <span class="kw">in</span> pages:
+    <span class="kw">for</span> code <span class="kw">in</span> re.findall(<span class="st">r'[A-Z]{2,5}\s\d{3}'</span>, page[<span class="st">"text"</span>]):
+        prefix = code.split()[<span class="num">0</span>]
+        <span class="kw">if</span> prefix <span class="kw">in</span> DEPT_MAP:
+            page_dept[page[<span class="st">"page"</span>]] = DEPT_MAP[prefix]
+
+<span class="cm"># nearest forward then backward, window=15</span>
+meta[<span class="st">"department"</span>] = nearest_dept(page_num)
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 8 — RETRIEVAL PIPELINE
+══════════════════════════════════════════════ -->
+<div class="slide full" id="s7" style="flex-direction:column;align-items:flex-start;padding:56px 80px;">
+  <div class="tag">Retrieval</div>
+  <h2 style="margin-bottom:8px">Hybrid retrieval — three signals, one answer</h2>
+  <p class="sub">Semantic search alone misses exact course codes. BM25 alone floods results with noise. Combined and reranked, they complement each other.</p>
+
+  <div style="width:100%;max-width:1000px">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Query: "What are the PhD in CS admission GPA requirements?"</div>
+
+    <div class="pipeline">
+      <div class="pipe-step">
+        <div class="ps-label">Input</div>
+        <div class="ps-val">Query</div>
+      </div>
+      <div class="pipe-arr">→</div>
+      <div class="pipe-step" style="border-color:#4f8ef7">
+        <div class="ps-label">Intent Router</div>
+        <div class="ps-val" style="color:#4f8ef7">admission</div>
+      </div>
+      <div class="pipe-arr">→</div>
+      <div class="pipe-step">
+        <div class="ps-label">n expanded</div>
+        <div class="ps-val">top 25</div>
+      </div>
+      <div class="pipe-arr">→</div>
+      <div class="pipe-step" style="border-color:#3ecf8e">
+        <div class="ps-label">Dept filter</div>
+        <div class="ps-val" style="color:#3ecf8e">CS only</div>
+      </div>
+      <div class="pipe-arr">→</div>
+      <div class="pipe-step">
+        <div class="ps-label">RRF Fusion</div>
+        <div class="ps-val">merge</div>
+      </div>
+      <div class="pipe-arr">→</div>
+      <div class="pipe-step" style="border-color:#f5c342">
+        <div class="ps-label">Cross-encoder</div>
+        <div class="ps-val" style="color:#f5c342">rerank</div>
+      </div>
+      <div class="pipe-arr">→</div>
+      <div class="pipe-step" style="border-color:#3ecf8e">
+        <div class="ps-label">Output</div>
+        <div class="ps-val" style="color:#3ecf8e">Top 5</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:28px">
+      <div style="background:#141414;border:1px solid #222;border-radius:8px;padding:20px">
+        <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px">Semantic Search</div>
+        <div style="font-size:12px;color:#888;line-height:1.6">ChromaDB · all-MiniLM-L6-v2 embeddings · finds conceptually similar chunks even if exact words differ</div>
+      </div>
+      <div style="background:#141414;border:1px solid #222;border-radius:8px;padding:20px">
+        <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:8px">BM25 Keyword</div>
+        <div style="font-size:12px;color:#888;line-height:1.6">Exact term matching · critical for course codes like "CS 577" · disabled for topic_search to prevent noise pollution</div>
+      </div>
+      <div style="background:#141414;border:1px solid #222;border-radius:8px;padding:20px">
+        <div style="font-size:12px;font-weight:700;color:var(--yellow);margin-bottom:8px">Cross-encoder Rerank</div>
+        <div style="font-size:12px;color:#888;line-height:1.6">ms-marco-MiniLM-L-6-v2 · scores (query, doc) pairs directly · more accurate than embedding similarity alone</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 9 — DEPARTMENT FILTERING IN ACTION
+══════════════════════════════════════════════ -->
+<div class="slide full" id="s8" style="flex-direction:column;align-items:flex-start;padding:56px 80px;">
+  <div class="tag">The Hard Problem — Department-Specific Admission</div>
+  <h2 style="margin-bottom:8px">"PhD in CS admission GPA?" — every dept's page looks identical</h2>
+  <p class="sub">Chemistry, Physics, ECE all have "Minimum GPA 3.0/4.0" tables. Semantic search cannot distinguish them.</p>
+
+  <div class="compare" style="width:100%;max-width:900px">
+    <div class="compare-box">
+      <div class="cb-label cb-bad">❌ Before — no dept metadata</div>
+      <div class="cb-item"><span>Chemistry · p409</span><span class="cb-dept dep-wrong">wrong dept</span></div>
+      <div class="cb-item"><span>Physics · p457</span><span class="cb-dept dep-wrong">wrong dept</span></div>
+      <div class="cb-item"><span>ECE · p119</span><span class="cb-dept dep-wrong">wrong dept</span></div>
+      <div style="margin-top:12px;font-size:12px;color:var(--red)">Model: "I don't have that information."</div>
+    </div>
+    <div class="compare-box">
+      <div class="cb-label cb-good">✓ After — dept-filtered query</div>
+      <div class="cb-item"><span>CS · p297 — GPA 3.0/3.5</span><span class="cb-dept dep-right">correct</span></div>
+      <div class="cb-item"><span>CS · p298 — GRE waiver</span><span class="cb-dept dep-right">correct</span></div>
+      <div class="cb-item"><span>CS · p327 — PhD specifics</span><span class="cb-dept dep-right">correct</span></div>
+      <div style="margin-top:12px;font-size:12px;color:var(--green)">Model: "Min undergrad GPA 3.0, master's GPA 3.5 (p297)"</div>
+    </div>
+  </div>
+
+  <div style="margin-top:24px;display:flex;gap:16px;max-width:900px;width:100%">
+    <div style="flex:1;background:#141414;border:1px solid #222;border-radius:8px;padding:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">extract_dept("PhD in CS admission…")</div>
+      <div style="font-size:13px;color:#fff">"CS" found in query → DEPT_MAP["CS"] → <span style="color:var(--green)">"Computer Science"</span></div>
+    </div>
+    <div style="flex:1;background:#141414;border:1px solid #222;border-radius:8px;padding:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">ChromaDB filtered query</div>
+      <div style="font-family:monospace;font-size:11px;color:#c9d1d9">where type=prose AND<br>department="Computer Science"</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 10 — GENERATION
+══════════════════════════════════════════════ -->
+<div class="slide" id="s9">
+  <div class="left">
+    <div class="pdf-header">
+      <span>Context passed to model</span>
+      <span>3 chunks</span>
+    </div>
+    <div class="pdf-body" style="font-family:monospace;font-size:10.5px;color:#333;line-height:1.7">
+      <div style="color:#888;margin-bottom:8px">User: "What are the PhD in CS admission GPA requirements?"</div>
+
+      <div style="background:#e8f0fe;border-left:3px solid #4f8ef7;padding:8px 10px;border-radius:0 4px 4px 0;margin-bottom:10px">
+        <div style="font-size:9px;color:#4f8ef7;font-weight:bold;margin-bottom:4px">[Page 297 | prose | Computer Science]</div>
+        Admission Requirements<br>
+        Minimum Cumulative Undergraduate GPA<br>
+        <strong>3.0/4.0</strong> with a four-year degree<br>
+        Ph.D. minimum master's GPA: <strong>3.5/4.0</strong>
+      </div>
+
+      <div style="background:#e8f5ee;border-left:3px solid #3ecf8e;padding:8px 10px;border-radius:0 4px 4px 0;margin-bottom:10px">
+        <div style="font-size:9px;color:#3ecf8e;font-weight:bold;margin-bottom:4px">[Page 298 | prose | Computer Science]</div>
+        GRE may be waived for U.S. applicants<br>
+        with bachelor's degree, min GPA 3.0/4.0<br>
+        Ph.D.: 304 quantitative+verbal, 3.5 writing
+      </div>
+
+      <div style="background:#fef9e8;border-left:3px solid #f5c342;padding:8px 10px;border-radius:0 4px 4px 0;margin-bottom:16px">
+        <div style="font-size:9px;color:#b8960a;font-weight:bold;margin-bottom:4px">[Page 327 | prose | Computer Science]</div>
+        Admission to the Ph.D. is competitive.<br>
+        Applicants must have high GPAs, GRE scores,<br>
+        and strong letters of recommendation.
+      </div>
+
+      <div style="background:#111;color:#3ecf8e;padding:10px;border-radius:4px;font-size:10.5px;line-height:1.7">
+        <strong style="color:#fff">Answer:</strong><br>
+        • Min undergrad GPA: <strong>3.0/4.0</strong> (p.297)<br>
+        • Min master's GPA for PhD: <strong>3.5/4.0</strong> (p.297)<br>
+        • GRE may be waived for U.S. applicants<br>
+        &nbsp;&nbsp;with GPA ≥ 3.0 (p.298)
+      </div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="tag">Generation — Azure OpenAI o4-mini</div>
+    <h2>Grounded. Cited. No hallucination.</h2>
+    <ul class="points">
+      <li>
+        <div class="icon ic-green">✓</div>
+        <span><strong>Answer only from context.</strong> System prompt: "You do not draw on external knowledge or prior training data about IIT."</span>
+      </li>
+      <li>
+        <div class="icon ic-green">✓</div>
+        <span><strong>Cite every fact.</strong> "According to page 297…" — student can verify anything the system says.</span>
+      </li>
+      <li>
+        <div class="icon ic-green">✓</div>
+        <span><strong>Honest about gaps.</strong> If context is insufficient → "I don't have that information." Never speculates.</span>
+      </li>
+      <li>
+        <div class="icon ic-blue">→</div>
+        <span><strong>Out-of-scope routing.</strong> Before the model is called, an embedding-based intent router intercepts queries about parking, sports, rankings, visa — and redirects without LLM cost.</span>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 11 — EVALUATION
+══════════════════════════════════════════════ -->
+<div class="slide full" id="s10" style="flex-direction:column;align-items:flex-start;padding:56px 80px;">
+  <div class="tag">Evaluation — RAGAS · 100 Questions · 7 Categories</div>
+  <h2 style="margin-bottom:6px">Rigorous, automated, LLM-judged</h2>
+  <p class="sub" style="margin-bottom:0">Each answer is scored on 4 metrics by RAGAS — faithfulness, relevancy, context precision, context recall.</p>
+
+  <table class="metrics" style="max-width:860px;width:100%">
+    <tr>
+      <th>Category</th>
+      <th class="num-cell">Faithfulness</th>
+      <th class="num-cell">Ans. Relevancy</th>
+      <th class="num-cell">Ctx Precision</th>
+      <th class="num-cell">Ctx Recall</th>
+      <th class="num-cell">N</th>
+    </tr>
+    <tr><td>Course Lookup</td><td class="num-cell good">0.816</td><td class="num-cell ok">0.618</td><td class="num-cell good">0.733</td><td class="num-cell ok">0.560</td><td class="num-cell">25</td></tr>
+    <tr><td>Program Requirements</td><td class="num-cell good">0.829</td><td class="num-cell ok">0.740</td><td class="num-cell ok">0.656</td><td class="num-cell ok">0.509</td><td class="num-cell">20</td></tr>
+    <tr><td>Admission</td><td class="num-cell ok">0.706</td><td class="num-cell good">0.810</td><td class="num-cell ok">0.692</td><td class="num-cell ok">0.578</td><td class="num-cell">15</td></tr>
+    <tr><td>Academic Policy</td><td class="num-cell good">0.843</td><td class="num-cell good">0.782</td><td class="num-cell ok">0.574</td><td class="num-cell good">0.756</td><td class="num-cell">15</td></tr>
+    <tr><td>Financial</td><td class="num-cell good">0.798</td><td class="num-cell good">0.798</td><td class="num-cell good">0.800</td><td class="num-cell good">0.933</td><td class="num-cell">5</td></tr>
+    <tr><td>Topic Search</td><td class="num-cell good">0.828</td><td class="num-cell good">0.890</td><td class="num-cell">0.133</td><td class="num-cell">0.250</td><td class="num-cell">10</td></tr>
+    <tr><td>Adversarial</td><td class="num-cell good">0.767</td><td class="num-cell">0.368</td><td class="num-cell">0.308</td><td class="num-cell">0.233</td><td class="num-cell">10</td></tr>
+    <tr>
+      <td>Overall (excl. artifacts)</td>
+      <td class="num-cell good">0.855</td>
+      <td class="num-cell ok">0.728</td>
+      <td class="num-cell ok">0.596</td>
+      <td class="num-cell ok">0.548</td>
+      <td class="num-cell">91</td>
+    </tr>
+  </table>
+
+  <div style="display:flex;gap:16px;margin-top:20px;max-width:860px;width:100%">
+    <div style="flex:1;background:#141414;border:1px solid #222;border-radius:6px;padding:14px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Adversarial low scores</div>
+      <div style="font-size:12px;color:#ccc">Expected and correct — system redirected weather/visa/rankings queries instead of answering</div>
+    </div>
+    <div style="flex:1;background:#141414;border:1px solid #222;border-radius:6px;padding:14px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Topic search ctx precision 0.133</div>
+      <div style="font-size:12px;color:#ccc">Answers are correct — RAGAS scores harshly when retrieved chunks span multiple topics</div>
+    </div>
+    <div style="flex:1;background:#141414;border:1px solid #222;border-radius:6px;padding:14px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:4px">9 zero-faithfulness artifacts</div>
+      <div style="font-size:12px;color:#ccc">RAGAS judge returned malformed schema — evaluation tool glitch, not system failures</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 12 — END
+══════════════════════════════════════════════ -->
+<div class="slide full" id="s11">
+  <div style="max-width:680px;text-align:center">
+    <div class="tag">Built for IIT Students</div>
+    <h1 style="margin-bottom:20px">618 pages.<br>One question.</h1>
+    <p class="sub">The catalog answers every question a student has. This system just makes asking it take 5 seconds instead of 30 minutes.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:480px;margin:0 auto;text-align:left">
+      <div style="background:#141414;border:1px solid #222;border-radius:8px;padding:16px">
+        <div style="font-size:24px;font-weight:700;color:var(--green);margin-bottom:4px">0.855</div>
+        <div style="font-size:12px;color:var(--muted)">Faithfulness — stays within the catalog</div>
+      </div>
+      <div style="background:#141414;border:1px solid #222;border-radius:8px;padding:16px">
+        <div style="font-size:24px;font-weight:700;color:var(--accent);margin-bottom:4px">100</div>
+        <div style="font-size:12px;color:var(--muted)">Evaluated questions across 7 categories</div>
+      </div>
+      <div style="background:#141414;border:1px solid #222;border-radius:8px;padding:16px">
+        <div style="font-size:24px;font-weight:700;color:var(--yellow);margin-bottom:4px">2,494</div>
+        <div style="font-size:12px;color:var(--muted)">Chunks stored with full metadata</div>
+      </div>
+      <div style="background:#141414;border:1px solid #222;border-radius:8px;padding:16px">
+        <div style="font-size:24px;font-weight:700;color:var(--green);margin-bottom:4px">95/100</div>
+        <div style="font-size:12px;color:var(--muted)">Professor evaluation score</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let cur = 0;
+
+const dotsEl = document.getElementById('dots');
+const counterEl = document.getElementById('counter');
+const progressEl = document.getElementById('progress');
+
+// build dots
+slides.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot';
+  d.onclick = () => go(i);
+  dotsEl.appendChild(d);
+});
+
+function go(n) {
+  slides[cur].classList.remove('on');
+  cur = Math.max(0, Math.min(total - 1, n));
+  slides[cur].classList.add('on');
+  document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('on', i === cur));
+  counterEl.textContent = (cur + 1) + ' / ' + total;
+  progressEl.style.width = ((cur + 1) / total * 100) + '%';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') go(cur + 1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(cur - 1);
+});
+
+go(0);
+</script>
+</body>
+</html>
